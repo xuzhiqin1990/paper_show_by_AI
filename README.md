@@ -8,3 +8,5 @@ There are two admins:
     2: admin2: normal admin, can add but not delete. pwd: admin2
 
 Password can be generate through generate_password_hash.php
+
+You can view the web in https://c2sml.cn/paper/ (https sometimes does not work, but it is safe to continue.)
