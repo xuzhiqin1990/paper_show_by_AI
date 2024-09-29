@@ -161,7 +161,17 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
             });
 
             function updatePaperList() {
+                var showFields = Object.values(<?php echo json_encode($default_show_fields); ?>);
                 var newOrder = $("#field-list").sortable("toArray", {attribute: "data-field"});
+                var filteredNewOrder = newOrder.filter(function(field) {
+                    return showFields.indexOf(field) !== -1;
+                });
+                // 设置cookie，有效期30天
+                var newOrderString = JSON.stringify(newOrder);
+                var date = new Date();
+                date.setTime(date.getTime() + (30*24*60*60*1000));
+                document.cookie = "newOrder=" + encodeURIComponent(newOrderString) + "; expires=" + date.toUTCString() + "; path=/";
+
                 var $table = $("table");
                 var $headers = $table.find("thead th").not(":first"); // 排除 ID 列
                 var $rows = $table.find("tbody tr");
@@ -169,7 +179,7 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
                 // 重新排序表头
                 $headers.each(function(index) {
                     var $header = $(this);
-                    var newIndex = newOrder.indexOf($header.data("field"));
+                    var newIndex = filteredNewOrder.indexOf($header.data("field"));
                     if (newIndex !== -1) {
                         $header.detach().insertAfter($table.find("thead th").eq(newIndex));
                     }
@@ -179,7 +189,7 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
                 $rows.each(function() {
                     var $row = $(this);
                     var $cells = $row.find("td").not(":first"); // 排除 ID 列
-                    newOrder.forEach(function(field, index) {
+                    filteredNewOrder.forEach(function(field, index) {
                         var $cell = $cells.filter(function() {
                             return $(this).data("field") === field;
                         });

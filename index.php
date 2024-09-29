@@ -16,8 +16,17 @@ $all_fields = getAllFields();
 
 $default_show_fields = ['title', 'authors', 'journal', 'year', 'tags'];
 
+// 检查是否存在设置显示字段的GET请求
+if (!empty($show_fields)) {
+    setcookie('selectedFields', json_encode($show_fields), time() + (86400 * 30), "/"); // 设置cookie，有效期30天
+}
+
+// 检查是否存在cookie
 if (empty($show_fields) && isset($_COOKIE['selectedFields'])) {
     $show_fields = json_decode($_COOKIE['selectedFields'], true);
+}
+if (isset($_COOKIE['newOrder'])) {
+    $all_fields = json_decode($_COOKIE['newOrder'], true);
 }
 
 $show_fields = array_intersect($all_fields, $show_fields ?: $default_show_fields);
