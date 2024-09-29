@@ -166,6 +166,12 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
                 var filteredNewOrder = newOrder.filter(function(field) {
                     return showFields.indexOf(field) !== -1;
                 });
+                // 设置cookie，有效期30天
+                var newOrderString = JSON.stringify(newOrder);
+                var date = new Date();
+                date.setTime(date.getTime() + (30*24*60*60*1000));
+                document.cookie = "newOrder=" + encodeURIComponent(newOrderString) + "; expires=" + date.toUTCString() + "; path=/";
+
                 var $table = $("table");
                 var $headers = $table.find("thead th").not(":first"); // 排除 ID 列
                 var $rows = $table.find("tbody tr");
