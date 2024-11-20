@@ -200,6 +200,72 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
                 });
             }
         });
+
+        function exportPapers() {
+            // 创建弹窗元素
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '50%';
+            modal.style.left = '50%';
+            modal.style.transform = 'translate(-50%, -50%)';
+            modal.style.backgroundColor = 'white';
+            modal.style.padding = '30px'; // 增加 padding
+            modal.style.width = '300px'; // 设置宽度
+            modal.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.5)';
+            modal.style.zIndex = '1000';
+
+            // 创建弹窗内容
+            const message = document.createElement('p');
+            message.textContent = 'Please select export option';
+            modal.appendChild(message);
+
+            // 创建按钮容器
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.display = 'flex';
+            buttonContainer.style.justifyContent = 'space-between';
+            buttonContainer.style.marginTop = '20px'; // 增加顶部间距
+            modal.appendChild(buttonContainer);
+
+            // 创建“Export All”按钮
+            const exportAllButton = document.createElement('button');
+            exportAllButton.textContent = 'Export All';
+            exportAllButton.style.flex = '1'; // 按钮均分宽度
+            exportAllButton.style.marginRight = '10px'; // 按钮间距
+            exportAllButton.onclick = function() {
+                const exportUrl = new URL(window.location.href);
+                exportUrl.searchParams.set('export', '1');
+                exportUrl.searchParams.set('export_all', '1');
+                window.location.href = exportUrl.toString();
+                document.body.removeChild(modal);
+            };
+            buttonContainer.appendChild(exportAllButton);
+
+            // 创建“Export Selected Fields”按钮
+            const exportSelectedButton = document.createElement('button');
+            exportSelectedButton.textContent = 'Export Selected Fields';
+            exportSelectedButton.style.flex = '1'; // 按钮均分宽度
+            exportSelectedButton.style.marginRight = '10px'; // 按钮间距
+            exportSelectedButton.onclick = function() {
+                const exportUrl = new URL(window.location.href);
+                exportUrl.searchParams.set('export', '1');
+                exportUrl.searchParams.set('export_all', '0');
+                window.location.href = exportUrl.toString();
+                document.body.removeChild(modal);
+            };
+            buttonContainer.appendChild(exportSelectedButton);
+
+            // 创建“Cancel”按钮
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Cancel';
+            cancelButton.style.flex = '1'; // 按钮均分宽度
+            cancelButton.onclick = function() {
+                document.body.removeChild(modal);
+            };
+            buttonContainer.appendChild(cancelButton);
+
+            // 添加弹窗到页面
+            document.body.appendChild(modal);
+        }
     </script>
 </head>
 <body>
@@ -241,7 +307,7 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
         </div>
 
         <div class="export-container">
-            <a href="?export&<?= http_build_query(['show_fields' => implode(',', $default_show_fields), 'tags' => $selected_tags]) ?>">Export to Excel</a>
+            <a href="javascript:void(0);" onclick="exportPapers()">Export to Excel</a>
         </div>
     </div>
 
