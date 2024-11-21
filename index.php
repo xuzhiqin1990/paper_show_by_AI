@@ -46,7 +46,8 @@ if (in_array('None', $selected_tags) && count($selected_tags) === 1) {
 $tag_counts = getTagCounts($all_papers);
 
 if (isset($_GET['export'])) {
-    exportPapersToCSV($papers, $show_fields);
+    $export_all_fields = isset($_GET['export_all']) && $_GET['export_all'] == '1';
+    exportPapersToCSV($papers, $export_all_fields ? $all_fields : $show_fields);
 }
 
 echo renderTemplate($selected_tags, $show_fields, $all_tags, $tag_counts, $all_fields, $field_types, $papers, $search_query);
