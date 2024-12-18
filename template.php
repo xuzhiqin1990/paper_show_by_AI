@@ -202,35 +202,31 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
         });
 
         function exportPapers() {
-            // 创建弹窗元素
             const modal = document.createElement('div');
-            modal.style.position = 'fixed';
-            modal.style.top = '50%';
-            modal.style.left = '50%';
-            modal.style.transform = 'translate(-50%, -50%)';
-            modal.style.backgroundColor = 'white';
-            modal.style.padding = '30px'; // 增加 padding
-            modal.style.width = '300px'; // 设置宽度
-            modal.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.5)';
-            modal.style.zIndex = '1000';
+            modal.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 20px;
+                border-radius: 5px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                z-index: 1000;
+            `;
 
-            // 创建弹窗内容
-            const message = document.createElement('p');
-            message.textContent = 'Please select export option';
-            modal.appendChild(message);
+            modal.innerHTML = `
+                <h3>Export Options</h3>
+                <p>Choose what to export:</p>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button id="export-all">Export All</button>
+                    <button id="export-selected">Export Selected</button>
+                    <button id="cancel">Cancel</button>
+                </div>
+            `;
 
-            // 创建按钮容器
-            const buttonContainer = document.createElement('div');
-            buttonContainer.style.display = 'flex';
-            buttonContainer.style.justifyContent = 'space-between';
-            buttonContainer.style.marginTop = '20px'; // 增加顶部间距
-            modal.appendChild(buttonContainer);
-
-            // 创建“Export All”按钮
-            const exportAllButton = document.createElement('button');
-            exportAllButton.textContent = 'Export All';
-            exportAllButton.style.flex = '1'; // 按钮均分宽度
-            exportAllButton.style.marginRight = '10px'; // 按钮间距
+            // 导出所有数据
+            const exportAllButton = modal.querySelector('#export-all');
             exportAllButton.onclick = function() {
                 const exportUrl = new URL(window.location.href);
                 exportUrl.searchParams.set('export', '1');
@@ -238,32 +234,32 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
                 window.location.href = exportUrl.toString();
                 document.body.removeChild(modal);
             };
-            buttonContainer.appendChild(exportAllButton);
 
-            // 创建“Export Selected Fields”按钮
-            const exportSelectedButton = document.createElement('button');
-            exportSelectedButton.textContent = 'Export Selected Fields';
-            exportSelectedButton.style.flex = '1'; // 按钮均分宽度
-            exportSelectedButton.style.marginRight = '10px'; // 按钮间距
+            // 导出选中的数据
+            const exportSelectedButton = modal.querySelector('#export-selected');
             exportSelectedButton.onclick = function() {
+                const selectedIds = Array.from(document.querySelectorAll('.paper-select:checked'))
+                    .map(checkbox => checkbox.dataset.id);
+                
+                if (selectedIds.length === 0) {
+                    alert('Please select at least one paper to export.');
+                    return;
+                }
+
                 const exportUrl = new URL(window.location.href);
                 exportUrl.searchParams.set('export', '1');
                 exportUrl.searchParams.set('export_all', '0');
+                exportUrl.searchParams.set('selected_ids', selectedIds.join(','));
                 window.location.href = exportUrl.toString();
                 document.body.removeChild(modal);
             };
-            buttonContainer.appendChild(exportSelectedButton);
 
-            // 创建“Cancel”按钮
-            const cancelButton = document.createElement('button');
-            cancelButton.textContent = 'Cancel';
-            cancelButton.style.flex = '1'; // 按钮均分宽度
+            // 取消按钮
+            const cancelButton = modal.querySelector('#cancel');
             cancelButton.onclick = function() {
                 document.body.removeChild(modal);
             };
-            buttonContainer.appendChild(cancelButton);
 
-            // 添加弹窗到页面
             document.body.appendChild(modal);
         }
     </script>
@@ -346,6 +342,7 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
     <table>
         <thead>
             <tr id="table-header">
+                <th><input type="checkbox" id="select-all"></th>
                 <th>ID</th>
                 <?php foreach ($default_show_fields as $field): ?>
                     <?php if ($field !== 'id'): ?>
@@ -359,6 +356,7 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
         <tbody id="paper-list">
             <?php foreach ($papers as $index => $paper): ?>
                 <tr>
+                    <td><input type="checkbox" class="paper-select" data-id="<?= $index + 1 ?>"></td>
                     <td><?= $index + 1 ?></td>
                     <?php foreach ($default_show_fields as $field): ?>
                         <?php if ($field !== 'id'): ?>
@@ -402,7 +400,47 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
                 element.classList.remove('desc');
             }
         });
+
+        // 添加全选/取消全选功能
+        document.getElementById('select-all').addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.paper-select');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
     </script>
+
+    <style>
+        /* 添加一些样式 */
+        .paper-select {
+            cursor: pointer;
+        }
+        
+        #select-all {
+            cursor: pointer;
+        }
+        
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        #cancel {
+            background: #6c757d;
+        }
+        
+        #cancel:hover {
+            background: #545b62;
+        }
+    </style>
 </body>
 </html>
 <?php

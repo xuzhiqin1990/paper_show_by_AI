@@ -46,8 +46,14 @@ if (in_array('None', $selected_tags) && count($selected_tags) === 1) {
 $tag_counts = getTagCounts($all_papers);
 
 if (isset($_GET['export'])) {
-    $export_all_fields = isset($_GET['export_all']) && $_GET['export_all'] == '1';
-    exportPapersToCSV($papers, $export_all_fields ? $all_fields : $show_fields);
+    $export_all = isset($_GET['export_all']) && $_GET['export_all'] == '1';
+    $selected_ids = isset($_GET['selected_ids']) ? array_map('intval', explode(',', $_GET['selected_ids'])) : null;
+    
+    if (!$export_all && $selected_ids === null) {
+        die('No papers selected for export');
+    }
+    
+    exportPapersToCSV($papers, $show_fields, $export_all ? null : $selected_ids);
 }
 
 echo renderTemplate($selected_tags, $show_fields, $all_tags, $tag_counts, $all_fields, $field_types, $papers, $search_query);

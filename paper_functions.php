@@ -35,7 +35,7 @@ function getTagCounts($papers) {
     return $tag_counts;
 }
 
-function exportPapersToCSV($papers, $fields) {
+function exportPapersToCSV($papers, $fields, $selected_ids = null) {
     $filename = 'papers_' . date('Y-m-d_His') . '.csv';
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -45,7 +45,12 @@ function exportPapersToCSV($papers, $fields) {
     fputs($output, "\xEF\xBB\xBF");
     fputcsv($output, $fields);
 
-    foreach ($papers as $paper) {
+    foreach ($papers as $index => $paper) {
+        // 如果提供了selected_ids,则只导出选中的行
+        if ($selected_ids !== null && !in_array($index + 1, $selected_ids)) {
+            continue;
+        }
+        
         $row = [];
         foreach ($fields as $field) {
             $row[] = $paper[$field] ?? '';
