@@ -1,5 +1,5 @@
 <?php
-function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_counts, $all_fields, $field_types, $papers, $search_query, $sort_field = 'year', $sort_order = 'desc') {
+function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_counts, $all_fields, $field_types, $papers, $search_query, $sort_field = 'year', $sort_order = 'desc', $is_logged_in = false, $user_role = '', $username = '') {
     // 获取排序参数
     $sort_field = isset($_GET['sort']) ? $_GET['sort'] : $sort_field;
     $sort_order = isset($_GET['order']) ? $_GET['order'] : $sort_order;
@@ -53,6 +53,106 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
         }
         .sortable.desc:after {
             content: ' \25BC'; /* Down arrow */
+        }
+        .container {
+            max-width: auto;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .header-row h1 {
+            margin: 0;
+            padding: 0;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .welcome-text {
+            color: #6c757d;
+        }
+
+        .admin-btn {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .admin-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background-color: #dc3545;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        .login-btn {
+            padding: 8px 16px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .login-btn:hover {
+            background-color: #218838;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1650px) {
+            .container {
+                max-width: 95%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 10px;
+                width: 100%;
+            }
+            
+            .header-row {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .user-section {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .personal-page-link {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            align-items: center;
         }
     </style>
     <script>
@@ -267,43 +367,33 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
 <body>
     <button id="top-button">Top</button>
 
-    <h1>Zhi-Qin John Xu's Publication (<span id="paper-count"><?= $paper_count ?></span> papers)</h1>
-
-    <a href="login.php" class="login-button">Login</a>
-
-    <!-- <div class="google-scholar-link">
-        <a href="https://ins.sjtu.edu.cn/people/xuzhiqin/" target="_blank">Homepage</a>
-    </div>
-
-    <div class="personal-page-link">
-        <a href="https://scholar.google.com/citations?user=EjLvG5cAAAAJ&hl=zh-CN" target="_blank">Google Scholar</a>
-    </div>
-
-    <div class="export-container">
-        <a href="?export&<?= http_build_query(['show_fields' => implode(',', $default_show_fields), 'tags' => $selected_tags]) ?>">Export to Excel</a>
-    </div> -->
-
-    <style>
-        .container {
-            display: flex;
-            justify-content: flex-start; /* 根据需要调整对齐方式 */
-        }
-        .container > div {
-            margin: 0 20px; /* 根据需要调整间距 */
-        }
-    </style>
-
     <div class="container">
-        <div class="google-scholar-link">
-            <a href="https://ins.sjtu.edu.cn/people/xuzhiqin/" target="_blank">Homepage</a>
+        <div class="header-row">
+            <h1>Zhi-Qin John Xu's Publication</h1>
+            <?php if ($is_logged_in): ?>
+                <div class="user-section">
+                    <span class="welcome-text">Welcome, <?= htmlspecialchars($username) ?></span>
+                    <a href="admin.php" class="admin-btn"><i class="fas fa-cog"></i> Admin Panel</a>
+                    <a href="logout.php" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            <?php else: ?>
+                <div class="user-section">
+                    <a href="login.php" class="login-btn"><i class="fas fa-sign-in-alt"></i> Login</a>
+                </div>
+            <?php endif; ?>
         </div>
 
+       
         <div class="personal-page-link">
-            <a href="https://scholar.google.com/citations?user=EjLvG5cAAAAJ&hl=zh-CN" target="_blank">Google Scholar</a>
-        </div>
-
-        <div class="export-container">
-            <a href="javascript:void(0);" onclick="exportPapers()">Export to Excel</a>
+            <a href="https://ins.sjtu.edu.cn/people/xuzhiqin/" target="_blank" class="link-btn homepage-btn">
+                <i class="fas fa-home"></i> Homepage
+            </a>
+            <a href="https://scholar.google.com/citations?user=EjLvG5cAAAAJ&hl=zh-CN" target="_blank" class="link-btn scholar-btn">
+                <i class="fas fa-graduation-cap"></i> Google Scholar
+            </a>
+            <a href="javascript:void(0);" onclick="exportPapers()" class="link-btn export-btn">
+                <i class="fas fa-file-excel"></i> Export to Excel
+            </a>
         </div>
     </div>
 
@@ -401,7 +491,7 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
             }
         });
 
-        // 添加全选/取消全选功能
+        // 添加全选/取消���选功能
         document.getElementById('select-all').addEventListener('change', function() {
             const checkboxes = document.querySelectorAll('.paper-select');
             checkboxes.forEach(checkbox => {
@@ -411,7 +501,7 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
     </script>
 
     <style>
-        /* 添加一些样式 */
+        /* 添加一��样式 */
         .paper-select {
             cursor: pointer;
         }
