@@ -1,5 +1,5 @@
 <?php
-function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_counts, $all_fields, $field_types, $papers, $search_query, $sort_field = 'year', $sort_order = 'desc') {
+function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_counts, $all_fields, $field_types, $papers, $search_query, $sort_field = 'year', $sort_order = 'desc', $is_logged_in = false, $user_role = '', $username = '') {
     // 获取排序参数
     $sort_field = isset($_GET['sort']) ? $_GET['sort'] : $sort_field;
     $sort_order = isset($_GET['order']) ? $_GET['order'] : $sort_order;
@@ -53,6 +53,106 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
         }
         .sortable.desc:after {
             content: ' \25BC'; /* Down arrow */
+        }
+        .container {
+            max-width: auto;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .header-row h1 {
+            margin: 0;
+            padding: 0;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .welcome-text {
+            color: #6c757d;
+        }
+
+        .admin-btn {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .admin-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background-color: #dc3545;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        .login-btn {
+            padding: 8px 16px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .login-btn:hover {
+            background-color: #218838;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1650px) {
+            .container {
+                max-width: 95%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 10px;
+                width: 100%;
+            }
+            
+            .header-row {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .user-section {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .personal-page-link {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            align-items: center;
         }
     </style>
     <script>
@@ -202,35 +302,31 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
         });
 
         function exportPapers() {
-            // 创建弹窗元素
             const modal = document.createElement('div');
-            modal.style.position = 'fixed';
-            modal.style.top = '50%';
-            modal.style.left = '50%';
-            modal.style.transform = 'translate(-50%, -50%)';
-            modal.style.backgroundColor = 'white';
-            modal.style.padding = '30px'; // 增加 padding
-            modal.style.width = '300px'; // 设置宽度
-            modal.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.5)';
-            modal.style.zIndex = '1000';
+            modal.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 20px;
+                border-radius: 5px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                z-index: 1000;
+            `;
 
-            // 创建弹窗内容
-            const message = document.createElement('p');
-            message.textContent = 'Please select export option';
-            modal.appendChild(message);
+            modal.innerHTML = `
+                <h3>Export Options</h3>
+                <p>Choose what to export:</p>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button id="export-all">Export All</button>
+                    <button id="export-selected">Export Selected</button>
+                    <button id="cancel">Cancel</button>
+                </div>
+            `;
 
-            // 创建按钮容器
-            const buttonContainer = document.createElement('div');
-            buttonContainer.style.display = 'flex';
-            buttonContainer.style.justifyContent = 'space-between';
-            buttonContainer.style.marginTop = '20px'; // 增加顶部间距
-            modal.appendChild(buttonContainer);
-
-            // 创建“Export All”按钮
-            const exportAllButton = document.createElement('button');
-            exportAllButton.textContent = 'Export All';
-            exportAllButton.style.flex = '1'; // 按钮均分宽度
-            exportAllButton.style.marginRight = '10px'; // 按钮间距
+            // 导出所有数据
+            const exportAllButton = modal.querySelector('#export-all');
             exportAllButton.onclick = function() {
                 const exportUrl = new URL(window.location.href);
                 exportUrl.searchParams.set('export', '1');
@@ -238,32 +334,32 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
                 window.location.href = exportUrl.toString();
                 document.body.removeChild(modal);
             };
-            buttonContainer.appendChild(exportAllButton);
 
-            // 创建“Export Selected Fields”按钮
-            const exportSelectedButton = document.createElement('button');
-            exportSelectedButton.textContent = 'Export Selected Fields';
-            exportSelectedButton.style.flex = '1'; // 按钮均分宽度
-            exportSelectedButton.style.marginRight = '10px'; // 按钮间距
+            // 导出选中的数据
+            const exportSelectedButton = modal.querySelector('#export-selected');
             exportSelectedButton.onclick = function() {
+                const selectedIds = Array.from(document.querySelectorAll('.paper-select:checked'))
+                    .map(checkbox => checkbox.dataset.id);
+                
+                if (selectedIds.length === 0) {
+                    alert('Please select at least one paper to export.');
+                    return;
+                }
+
                 const exportUrl = new URL(window.location.href);
                 exportUrl.searchParams.set('export', '1');
                 exportUrl.searchParams.set('export_all', '0');
+                exportUrl.searchParams.set('selected_ids', selectedIds.join(','));
                 window.location.href = exportUrl.toString();
                 document.body.removeChild(modal);
             };
-            buttonContainer.appendChild(exportSelectedButton);
 
-            // 创建“Cancel”按钮
-            const cancelButton = document.createElement('button');
-            cancelButton.textContent = 'Cancel';
-            cancelButton.style.flex = '1'; // 按钮均分宽度
+            // 取消按钮
+            const cancelButton = modal.querySelector('#cancel');
             cancelButton.onclick = function() {
                 document.body.removeChild(modal);
             };
-            buttonContainer.appendChild(cancelButton);
 
-            // 添加弹窗到页面
             document.body.appendChild(modal);
         }
     </script>
@@ -271,43 +367,33 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
 <body>
     <button id="top-button">Top</button>
 
-    <h1>Zhi-Qin John Xu's Publication (<span id="paper-count"><?= $paper_count ?></span> papers)</h1>
-
-    <a href="login.php" class="login-button">Login</a>
-
-    <!-- <div class="google-scholar-link">
-        <a href="https://ins.sjtu.edu.cn/people/xuzhiqin/" target="_blank">Homepage</a>
-    </div>
-
-    <div class="personal-page-link">
-        <a href="https://scholar.google.com/citations?user=EjLvG5cAAAAJ&hl=zh-CN" target="_blank">Google Scholar</a>
-    </div>
-
-    <div class="export-container">
-        <a href="?export&<?= http_build_query(['show_fields' => implode(',', $default_show_fields), 'tags' => $selected_tags]) ?>">Export to Excel</a>
-    </div> -->
-
-    <style>
-        .container {
-            display: flex;
-            justify-content: flex-start; /* 根据需要调整对齐方式 */
-        }
-        .container > div {
-            margin: 0 20px; /* 根据需要调整间距 */
-        }
-    </style>
-
     <div class="container">
-        <div class="google-scholar-link">
-            <a href="https://ins.sjtu.edu.cn/people/xuzhiqin/" target="_blank">Homepage</a>
+        <div class="header-row">
+            <h1>Zhi-Qin John Xu's Publication</h1>
+            <?php if ($is_logged_in): ?>
+                <div class="user-section">
+                    <span class="welcome-text">Welcome, <?= htmlspecialchars($username) ?></span>
+                    <a href="admin.php" class="admin-btn"><i class="fas fa-cog"></i> Admin Panel</a>
+                    <a href="logout.php" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            <?php else: ?>
+                <div class="user-section">
+                    <a href="login.php" class="login-btn"><i class="fas fa-sign-in-alt"></i> Login</a>
+                </div>
+            <?php endif; ?>
         </div>
 
+       
         <div class="personal-page-link">
-            <a href="https://scholar.google.com/citations?user=EjLvG5cAAAAJ&hl=zh-CN" target="_blank">Google Scholar</a>
-        </div>
-
-        <div class="export-container">
-            <a href="javascript:void(0);" onclick="exportPapers()">Export to Excel</a>
+            <a href="https://ins.sjtu.edu.cn/people/xuzhiqin/" target="_blank" class="link-btn homepage-btn">
+                <i class="fas fa-home"></i> Homepage
+            </a>
+            <a href="https://scholar.google.com/citations?user=EjLvG5cAAAAJ&hl=zh-CN" target="_blank" class="link-btn scholar-btn">
+                <i class="fas fa-graduation-cap"></i> Google Scholar
+            </a>
+            <a href="javascript:void(0);" onclick="exportPapers()" class="link-btn export-btn">
+                <i class="fas fa-file-excel"></i> Export to Excel
+            </a>
         </div>
     </div>
 
@@ -346,6 +432,7 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
     <table>
         <thead>
             <tr id="table-header">
+                <th><input type="checkbox" id="select-all"></th>
                 <th>ID</th>
                 <?php foreach ($default_show_fields as $field): ?>
                     <?php if ($field !== 'id'): ?>
@@ -359,6 +446,7 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
         <tbody id="paper-list">
             <?php foreach ($papers as $index => $paper): ?>
                 <tr>
+                    <td><input type="checkbox" class="paper-select" data-id="<?= $index + 1 ?>"></td>
                     <td><?= $index + 1 ?></td>
                     <?php foreach ($default_show_fields as $field): ?>
                         <?php if ($field !== 'id'): ?>
@@ -402,7 +490,47 @@ function renderTemplate($selected_tags, $default_show_fields, $all_tags, $tag_co
                 element.classList.remove('desc');
             }
         });
+
+        // 添加全选/取消���选功能
+        document.getElementById('select-all').addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.paper-select');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
     </script>
+
+    <style>
+        /* 添加一��样式 */
+        .paper-select {
+            cursor: pointer;
+        }
+        
+        #select-all {
+            cursor: pointer;
+        }
+        
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        #cancel {
+            background: #6c757d;
+        }
+        
+        #cancel:hover {
+            background: #545b62;
+        }
+    </style>
 </body>
 </html>
 <?php
