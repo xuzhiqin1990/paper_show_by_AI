@@ -36,10 +36,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         foreach ($bound_values as $index => $value) {
             $stmt->bindValue($index + 1, $value);
         }
-        $stmt->execute();
-        $_SESSION['paper_added'] = true;
-        header("Location: addpaper.php");
-        exit();
+        if ($stmt->execute()) {
+            $_SESSION['paper_added'] = true;
+            header("Location: addpaper.php");
+            exit();
+        }
     }
 }
 

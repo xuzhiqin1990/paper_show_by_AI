@@ -43,7 +43,23 @@ if (in_array('None', $selected_tags) && count($selected_tags) === 1) {
     $papers = $all_papers;
 }
 
-$tag_counts = getTagCounts($all_papers);
+$tag_counts = array();
+if (!empty($papers)) {  // $papers 是查询结果的论文列表
+    foreach($papers as $paper) {
+        if (!empty($paper['tags'])) {
+            $tags = explode(',', $paper['tags']);
+            foreach($tags as $tag) {
+                $tag = trim($tag);
+                if(!empty($tag)) {
+                    if(!isset($tag_counts[$tag])) {
+                        $tag_counts[$tag] = 0;
+                    }
+                    $tag_counts[$tag]++;
+                }
+            }
+        }
+    }
+}
 
 if (isset($_GET['export'])) {
     $export_all = isset($_GET['export_all']) && $_GET['export_all'] == '1';
